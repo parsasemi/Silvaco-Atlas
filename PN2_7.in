@@ -1,0 +1,49 @@
+go atlas
+
+# Adding the meshings
+mesh
+x.m l=0.0 spac=3.0
+x.m l=18.0 spac=3.0
+y.m l=0.0 spac=3.0
+y.m l=22.5 spac=0.3
+y.m l=45.0 spac=1.2
+
+region num=1 silicon
+
+# Naming the P-Type Silicon Anode and N-Type Silicon Cathode
+electrode top name=anode
+electrode bottom name=cathode
+
+# Doping Concentration
+doping uniform n.type conc=1e19 y.min=22.5 y.max=45.0
+doping uniform p.type conc=1e19 y.min=0.0 y.max=22.5
+
+# Physical Models
+models srh conmob bgn auger fldmob k.p fermi incomplete consrh optr print
+
+# Impact Ionization model
+impact selb
+
+# Adding newton numerical model 
+method newton
+
+# Solving the P-N junction in equilibrium
+solve init
+
+# Getting all the Carrier Concentrations and Energy bands and diagrams
+output band.temp jdiffusion jdrift
+
+save outf=pn2_long45.str
+tonyplot pn2_long45.str
+
+# Performing the voltage sweep to obtain I-V characteristics
+
+log outf=pn2_long45_iv_reverse.log
+
+# Solve for reverse bias from 5V to -5V in -0.1V steps
+solve name=anode vanode=5.0 vfinal=-5.0 vstep=-0.1
+
+save outf=pn2_long45_iv_reverse.str
+tonyplot pn2_long45_iv_reverse.log
+
+quit

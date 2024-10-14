@@ -1,0 +1,58 @@
+go atlas
+
+# Adding the meshings
+mesh
+x.m l=0.0 spac=3.0
+x.m l=18.0 spac=3.0
+y.m l=0.0 spac=3.0
+y.m l=22.5 spac=0.3
+y.m l=45.0 spac=1.2
+
+region num=1 silicon
+
+# Naming the P-Type Silicon Anode and N-Type Silicon Cathode
+electrode top name=anode
+electrode bottom name=cathode
+
+# Doping Concentration
+doping uniform n.type conc=1e19 y.min=22.5 y.max=45.0
+doping uniform p.type conc=1e19 y.min=0.0 y.max=22.5
+
+# Physical Models
+models srh conmob bgn auger fldmob k.p fermi incomplete consrh optr print
+
+# Impact Ionization model
+impact selb
+
+# Adding newton numerical model 
+method newton
+
+# Solving the P-N junction in equilibrium
+solve init
+
+# Getting all the Carrier Concentrations and Energy bands and diagrams
+output band.temp jdiffusion jdrift
+
+save outf=pn2_long45.str
+tonyplot pn2_long45.str
+
+# Log file for AC analysis results
+log outf=pn2_long45_cv.log
+
+# Perform DC and AC sweep from 0V to 5V
+solve name=anode vanode=0.0 vstep=0.1 vfinal=5.0 ac freq=1e6 qscv nocurrent
+
+# Extracting and saving the capacitance values versus bias voltage (positive bias)
+extract name="junction_cap_vs_pos_bias" curve(v."anode", c."anode""cathode") outfile="junction_cap_vs_pos_bias.dat"
+extract name="storage_cap_vs_pos_bias" curve(v."anode", c."anode""cathode") outfile="storage_cap_vs_pos_bias.dat"
+
+# Perform DC and AC sweep from 5V to -5V
+solve name=anode vanode=5.0 vstep=-0.1 vfinal=-5.0 ac freq=1e6 qscv nocurrent
+
+# Extracting and saving the capacitance values versus bias voltage (negative bias)
+extract name="junction_cap_vs_neg_bias" curve(v."anode", c."anode""cathode") outfile="junction_cap_vs_neg_bias.dat"
+extract name="storage_cap_vs_neg_bias" curve(v."anode", c."anode""cathode") outfile="storage_cap_vs_neg_bias.dat"
+
+tonyplot pn2_long45_cv.log
+
+quit

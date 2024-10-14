@@ -1,0 +1,50 @@
+go atlas
+
+# Adding the meshings
+mesh
+x.m l=0.0 spac=3.0
+x.m l=18.0 spac=3.0
+y.m l=0.0 spac=3.0
+y.m l=22.5 spac=0.3
+y.m l=45.0 spac=1.2
+
+region num=1 silicon
+
+# Naming the P-Type Silicon Anode and N-Type Silicon Cathode
+electrode top name=anode
+electrode bottom name=cathode
+
+# Doping Concentration
+doping uniform n.type conc=1e19 y.min=22.5 y.max=45.0
+doping uniform p.type conc=1e19 y.min=0.0 y.max=22.5
+
+# Physical Models
+models srh conmob bgn auger fldmob k.p fermi incomplete consrh optr print
+
+# Impact Ionization model
+impact selb
+
+# Adding newton numerical model 
+method newton
+
+# Solving the P-N junction in equilibrium
+solve init
+
+# Getting all the Carrier Concentrations and Energy bands and diagrams
+output band.temp jdiffusion jdrift
+save outf=pn2_long45_init.str
+tonyplot pn2_long45_init.str
+
+# Low-Level Injection: Apply a small forward bias (e.g., 0.3V)
+log outf=pn2_long45_low_level_injection.log
+solve name=anode vanode=0.3 vstep=0
+save outf=pn2_long45_low_level_injection.str
+tonyplot pn2_long45_low_level_injection.str
+
+# High-Level Injection: Apply a larger forward bias (e.g., 3V)
+log outf=pn2_long45_high_level_injection.log
+solve name=anode vanode=3.0 vstep=0
+save outf=pn2_long45_high_level_injection.str
+tonyplot pn2_long45_high_level_injection.str
+
+quit

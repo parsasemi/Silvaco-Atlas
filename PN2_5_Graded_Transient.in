@@ -1,0 +1,46 @@
+go atlas
+
+# Adding the meshings with higher density
+mesh
+x.m l=0.0 spac=0.5
+x.m l=18.0 spac=0.5
+y.m l=0.0 spac=0.5
+y.m l=22.5 spac=0.05
+y.m l=45.0 spac=0.25
+
+region num=1 silicon
+
+# Naming the P-Type Silicon Anode and N-Type Silicon Cathode
+electrode top name=anode
+electrode bottom name=cathode
+
+# Graded Doping Concentration
+doping gaussian p.type conc=1e19 peak=0.0 junc=22.5 char=2
+doping gaussian n.type conc=1e19 peak=45.0 junc=22.5 char=2
+
+# Physical Models
+models srh conmob bgn auger fldmob k.p fermi incomplete consrh optr print
+
+# Impact Ionization model
+impact selb
+
+# Adding newton numerical model 
+method newton
+
+# Solving the P-N junction in equilibrium
+solve init
+
+# Getting all the Carrier Concentrations and Energy bands and diagrams
+output band.temp jdiffusion jdrift
+
+save outf=pn_graded_junction.str
+tonyplot pn_graded_junction.str
+
+# Transient response simulation for Graded Junction
+log outf=pn_graded_junction_transient.log
+solve init
+solve name=anode vanode=0.0 vstep=0.1
+
+solve vanode=1 ramptime=1e-9 dt=2e-11 tstop=50e-9 
+
+quit

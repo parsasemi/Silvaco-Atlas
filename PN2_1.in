@@ -1,0 +1,47 @@
+go atlas
+
+#Adding the meshings
+mesh 
+x.m l=0.0 spac=1.0
+x.m l=1.0 spac=1.0
+y.m l=0.0 spac=1.0
+y.m l=5.0 spac=0.005
+y.m l=15 spac=2.0
+
+region num=1 silicon
+
+#Naming the P-Type Silicon Cathode and N-Type Silicon Anode
+electrode top name=cathode
+electrode bottom name=cathode
+
+# Doping Concentration
+doping uniform p.type conc=1e19 x.l=0 x.r=1 y.t=0.0 y.b=5.0 
+doping uniform n.type conc=1e19 x.l=0 x.r=1 y.t=5.0 y.b=15.0
+
+#Physical Models
+models srh conmob bgn auger fldmob
+
+#Impact Ionization model
+impact selb
+
+#Adding newton numerical model 
+method newton climit=1.e-5
+
+#Solving the P-N junction in equilibirium
+solve init
+
+#Getting all the Carrier Concentrations and Energy bands and diagrams
+output band.temp
+
+save outf=pn2.str
+tonyplot pn2.str
+
+#---------------------
+
+curvetrace end.val=1e-4 contr.name=cathode curr.cont mincur=1e-3 nextst.ratio=1.02 step.init=0.01
+log outf=pn2_eb.log
+solve curvetrace
+
+tonyplot pn2_eb.log
+
+quit
